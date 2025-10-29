@@ -237,7 +237,6 @@ body.dark-mode .task-item {
 }
 
 .task-item:hover {
-    transform: translateX(5px);
     box-shadow: 0 5px 20px rgba(214, 140, 69, 0.2);
 }
 
