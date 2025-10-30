@@ -1,16 +1,7 @@
 // ==================== STATE MANAGEMENT ====================
 let todoList = [];
-let dragState = {
-    isDragging: false,
-    draggedElement: null,
-    draggedIndex: null,
-    placeholder: null,
-    originalPosition: null,
-    offsetX: 0,
-    offsetY: 0,
-    doubleClickTimer: null,
-    clickCount: 0
-};
+let draggedElement = null;
+let draggedIndex = null;
 
 // ==================== DOM ELEMENTS ====================
 const DOM = {
@@ -50,6 +41,57 @@ const escapeHtml = (str) => {
     return div.innerHTML;
 };
 
+/**
+ * Shows custom confirmation dialog
+ * @param {string} message - Message to display
+ * @returns {Promise<boolean>} True if confirmed, false otherwise
+ */
+const customConfirm = (message) => {
+    return new Promise((resolve) => {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'custom-confirm-overlay';
+        
+        // Create dialog
+        const dialog = document.createElement('div');
+        dialog.className = 'custom-confirm-dialog';
+        dialog.innerHTML = `
+            <div class="custom-confirm-header">
+                <span class="custom-confirm-icon">⚠️</span>
+                <h3>Confirm Action</h3>
+            </div>
+            <p class="custom-confirm-message">${escapeHtml(message)}</p>
+            <div class="custom-confirm-buttons">
+                <button class="custom-confirm-btn cancel-btn" id="confirmCancel">Cancel</button>
+                <button class="custom-confirm-btn ok-btn" id="confirmOk">Delete</button>
+            </div>
+        `;
+        
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+        
+        // Animate in
+        setTimeout(() => {
+            overlay.classList.add('show');
+        }, 10);
+        
+        // Handle buttons
+        const handleClose = (result) => {
+            overlay.classList.remove('show');
+            setTimeout(() => {
+                document.body.removeChild(overlay);
+                resolve(result);
+            }, 300);
+        };
+        
+        document.getElementById('confirmOk').addEventListener('click', () => handleClose(true));
+        document.getElementById('confirmCancel').addEventListener('click', () => handleClose(false));
+        overlay.addEventListener('click', (e) => {
+            if (e.target === overlay) handleClose(false);
+        });
+    });
+};
+
 // ==================== ANIMATION FUNCTIONS ====================
 
 /**
@@ -64,7 +106,8 @@ const createFallingLeaves = () => {
         leaf.className = 'leaf';
         leaf.textContent = randomItem(leafEmojis);
         leaf.style.left = `${randomRange(0, 100)}%`;
-        leaf.style.animationDelay = `${randomRange(0, 15)}s`;
+        leaf.style.top = `${randomRange(-20, -10)}%`;
+        leaf.style.animationDelay = `${randomRange(0, 5)}s`;
         leaf.style.animationDuration = `${randomRange(10, 20)}s`;
         return leaf;
     };
@@ -96,25 +139,31 @@ const renderEmptyState = () => `
  * @returns {string} HTML for task item
  */
 const renderTaskItem = (item, index) => `
-    <div class="task-item ${item.completed ? 'completed' : ''}" data-index="${index}">
+    <div class="task-item ${item.completed ? 'completed' : ''}" 
+         data-index="${index}"
+         draggable="true"
+         role="listitem">
         <div class="task-content">
             <input type="checkbox" 
                    class="checkbox" 
                    ${item.completed ? 'checked' : ''} 
                    data-action="toggle"
-                   data-index="${index}">
+                   data-index="${index}"
+                   aria-label="Mark task as ${item.completed ? 'incomplete' : 'complete'}">
             <span class="task-number">${index + 1}.</span>
-            <span class="task-text">${escapeHtml(item.text)}</span>
+            <span class="task-text" data-index="${index}">${escapeHtml(item.text)}</span>
         </div>
         <div class="task-actions">
             <button class="action-btn edit-btn" 
                     data-action="edit" 
-                    data-index="${index}">
+                    data-index="${index}"
+                    aria-label="Edit task">
                 Edit
             </button>
             <button class="action-btn delete-btn" 
                     data-action="delete" 
-                    data-index="${index}">
+                    data-index="${index}"
+                    aria-label="Delete task">
                 Delete
             </button>
         </div>
@@ -132,221 +181,7 @@ const render = () => {
 
     const tasksHtml = todoList.map(renderTaskItem).join('');
     DOM.tasksList.innerHTML = tasksHtml;
-    initDragAndDrop();
-};
-
-// ==================== DRAG AND DROP FUNCTIONALITY ====================
-
-/**
- * Handles double click detection to start dragging
- * @param {Event} e - Click event
- * @param {HTMLElement} taskItem - Task element
- */
-const handleDoubleClick = (e, taskItem) => {
-    dragState.clickCount++;
-    
-    if (dragState.clickCount === 1) {
-        dragState.doubleClickTimer = setTimeout(() => {
-            dragState.clickCount = 0;
-        }, 300);
-    } else if (dragState.clickCount === 2) {
-        clearTimeout(dragState.doubleClickTimer);
-        dragState.clickCount = 0;
-        startDragging(e, taskItem);
-    }
-};
-
-/**
- * Starts the dragging operation
- * @param {Event} e - Mouse event
- * @param {HTMLElement} taskItem - Task element to drag
- */
-const startDragging = (e, taskItem) => {
-    if (e.target.closest('.action-btn') || e.target.closest('.checkbox')) return;
-    
-    dragState.isDragging = true;
-    dragState.draggedElement = taskItem;
-    dragState.draggedIndex = parseInt(taskItem.dataset.index);
-    
-    const rect = taskItem.getBoundingClientRect();
-    dragState.offsetX = e.clientX - rect.left;
-    dragState.offsetY = e.clientY - rect.top;
-    dragState.originalPosition = {
-        index: dragState.draggedIndex,
-        top: rect.top,
-        left: rect.left
-    };
-    
-    // Create placeholder
-    dragState.placeholder = taskItem.cloneNode(true);
-    dragState.placeholder.classList.add('placeholder');
-    taskItem.parentNode.insertBefore(dragState.placeholder, taskItem);
-    
-    // Style dragged element
-    taskItem.classList.add('dragging');
-    taskItem.style.position = 'fixed';
-    taskItem.style.zIndex = '1000';
-    taskItem.style.width = rect.width + 'px';
-    taskItem.style.left = (e.clientX - dragState.offsetX) + 'px';
-    taskItem.style.top = (e.clientY - dragState.offsetY) + 'px';
-    taskItem.style.pointerEvents = 'none';
-    
-    document.body.style.cursor = 'grabbing';
-};
-
-/**
- * Handles mouse move during dragging
- * @param {Event} e - Mouse move event
- */
-const handleDragMove = (e) => {
-    if (!dragState.isDragging || !dragState.draggedElement) return;
-    
-    const x = e.clientX - dragState.offsetX;
-    const y = e.clientY - dragState.offsetY;
-    
-    dragState.draggedElement.style.left = x + 'px';
-    dragState.draggedElement.style.top = y + 'px';
-    
-    // Find the element we're hovering over
-    const afterElement = getDragAfterElement(e.clientY);
-    const placeholder = dragState.placeholder;
-    
-    if (afterElement == null) {
-        DOM.tasksList.appendChild(placeholder);
-    } else {
-        DOM.tasksList.insertBefore(placeholder, afterElement);
-    }
-};
-
-/**
- * Gets the element that should be after the dragged element
- * @param {number} y - Y position of mouse
- * @returns {HTMLElement|null} Element after dragged position
- */
-const getDragAfterElement = (y) => {
-    const draggableElements = [...DOM.tasksList.querySelectorAll('.task-item:not(.dragging):not(.placeholder)')];
-    
-    return draggableElements.reduce((closest, child) => {
-        const box = child.getBoundingClientRect();
-        const offset = y - box.top - box.height / 2;
-        
-        if (offset < 0 && offset > closest.offset) {
-            return { offset: offset, element: child };
-        } else {
-            return closest;
-        }
-    }, { offset: Number.NEGATIVE_INFINITY }).element;
-};
-
-/**
- * Checks if the element is inside the tasks list container
- * @param {number} x - X position
- * @param {number} y - Y position
- * @returns {boolean} True if inside container
- */
-const isInsideContainer = (x, y) => {
-    const rect = DOM.tasksList.getBoundingClientRect();
-    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
-};
-
-/**
- * Handles the end of dragging operation
- * @param {Event} e - Mouse up event
- */
-const handleDragEnd = (e) => {
-    if (!dragState.isDragging || !dragState.draggedElement) return;
-    
-    const isInside = isInsideContainer(e.clientX, e.clientY);
-    
-    if (!isInside) {
-        // Return to original position with animation
-        returnToOriginalPosition();
-    } else {
-        // Drop at new position
-        completeDrop();
-    }
-    
-    document.body.style.cursor = 'default';
-};
-
-/**
- * Returns the dragged element to its original position
- */
-const returnToOriginalPosition = () => {
-    const element = dragState.draggedElement;
-    const original = dragState.originalPosition;
-    
-    // Animate back
-    element.style.transition = 'all 0.3s ease';
-    element.style.left = original.left + 'px';
-    element.style.top = original.top + 'px';
-    element.style.opacity = '0.5';
-    
-    setTimeout(() => {
-        cleanupDrag();
-        render();
-    }, 300);
-};
-
-/**
- * Completes the drop at new position
- */
-const completeDrop = () => {
-    const placeholder = dragState.placeholder;
-    const newIndex = [...DOM.tasksList.children].indexOf(placeholder);
-    const oldIndex = dragState.draggedIndex;
-    
-    // Reorder array
-    const [movedItem] = todoList.splice(oldIndex, 1);
-    todoList.splice(newIndex, 0, movedItem);
-    
-    cleanupDrag();
-    render();
-    saveToLocalStorage();
-};
-
-/**
- * Cleans up drag state and elements
- */
-const cleanupDrag = () => {
-    if (dragState.draggedElement) {
-        dragState.draggedElement.classList.remove('dragging');
-        dragState.draggedElement.style.position = '';
-        dragState.draggedElement.style.zIndex = '';
-        dragState.draggedElement.style.width = '';
-        dragState.draggedElement.style.left = '';
-        dragState.draggedElement.style.top = '';
-        dragState.draggedElement.style.pointerEvents = '';
-        dragState.draggedElement.style.transition = '';
-        dragState.draggedElement.style.opacity = '';
-    }
-    
-    if (dragState.placeholder && dragState.placeholder.parentNode) {
-        dragState.placeholder.remove();
-    }
-    
-    dragState.isDragging = false;
-    dragState.draggedElement = null;
-    dragState.draggedIndex = null;
-    dragState.placeholder = null;
-    dragState.originalPosition = null;
-};
-
-/**
- * Initializes drag and drop for all task items
- */
-const initDragAndDrop = () => {
-    const taskItems = DOM.tasksList.querySelectorAll('.task-item');
-    
-    taskItems.forEach(taskItem => {
-        taskItem.addEventListener('mousedown', (e) => {
-            handleDoubleClick(e, taskItem);
-        });
-    });
-    
-    // Global mouse move and mouse up listeners
-    document.addEventListener('mousemove', handleDragMove);
-    document.addEventListener('mouseup', handleDragEnd);
+    attachDragListeners();
 };
 
 // ==================== TASK MANAGEMENT ====================
@@ -378,8 +213,9 @@ const addTask = () => {
  * Deletes a task from the list
  * @param {number} index - Index of task to delete
  */
-const deleteTask = (index) => {
-    if (confirm('Are you sure you want to delete this task?')) {
+const deleteTask = async (index) => {
+    const confirmed = await customConfirm('Are you sure you want to delete this task? This action cannot be undone.');
+    if (confirmed) {
         todoList.splice(index, 1);
         render();
         saveToLocalStorage();
@@ -387,30 +223,96 @@ const deleteTask = (index) => {
 };
 
 /**
- * Edits an existing task
+ * Enables inline editing for a task
  * @param {number} index - Index of task to edit
  */
 const editTask = (index) => {
+    const taskItem = document.querySelector(`.task-item[data-index="${index}"]`);
+    if (!taskItem) return;
+
+    const taskTextSpan = taskItem.querySelector('.task-text');
     const currentText = todoList[index].text;
-    const newText = prompt('Edit your task:', currentText);
     
-    if (newText === null) return;
+    // Disable dragging during edit
+    taskItem.setAttribute('draggable', 'false');
+    taskItem.style.cursor = 'default';
     
-    const trimmedText = newText.trim();
+    // Replace span with input
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.className = 'task-text task-text-editable';
+    input.value = currentText;
+    input.maxLength = 200;
+    input.dataset.index = index;
     
-    if (!trimmedText) {
+    taskTextSpan.replaceWith(input);
+    input.focus();
+    input.select();
+    
+    // Update buttons
+    const actionsDiv = taskItem.querySelector('.task-actions');
+    actionsDiv.innerHTML = `
+        <button class="action-btn save-btn" data-action="save" data-index="${index}" aria-label="Save task">
+            Save
+        </button>
+        <button class="action-btn cancel-btn" data-action="cancel" data-index="${index}" aria-label="Cancel editing">
+            Cancel
+        </button>
+    `;
+    
+    // Handle Enter key
+    input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            saveTask(index);
+        }
+    });
+    
+    // Handle Escape key
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            e.preventDefault();
+            cancelEdit(index);
+        }
+    });
+};
+
+/**
+ * Saves the edited task
+ * @param {number} index - Index of task to save
+ */
+const saveTask = (index) => {
+    const taskItem = document.querySelector(`.task-item[data-index="${index}"]`);
+    if (!taskItem) return;
+    
+    const input = taskItem.querySelector('.task-text-editable');
+    if (!input) return;
+    
+    const newText = input.value.trim();
+    
+    if (!newText) {
         alert('Task cannot be empty!');
+        input.focus();
         return;
     }
 
-    if (trimmedText.length > 200) {
+    if (newText.length > 200) {
         alert('Task is too long! Please keep it under 200 characters.');
+        input.focus();
         return;
     }
 
-    todoList[index].text = trimmedText;
+    todoList[index].text = newText;
     render();
     saveToLocalStorage();
+};
+
+/**
+ * Cancels editing and restores original task
+ * @param {number} index - Index of task to cancel
+ */
+const cancelEdit = (index) => {
+    render();
 };
 
 /**
@@ -421,6 +323,147 @@ const toggleComplete = (index) => {
     todoList[index].completed = !todoList[index].completed;
     render();
     saveToLocalStorage();
+};
+
+// ==================== DRAG AND DROP ====================
+
+/**
+ * Attaches drag event listeners to all task items
+ */
+const attachDragListeners = () => {
+    const taskItems = document.querySelectorAll('.task-item');
+    
+    taskItems.forEach(item => {
+        item.addEventListener('dragstart', handleDragStart);
+        item.addEventListener('dragend', handleDragEnd);
+        item.addEventListener('dragover', handleDragOver);
+        item.addEventListener('drop', handleDrop);
+        item.addEventListener('dragenter', handleDragEnter);
+        item.addEventListener('dragleave', handleDragLeave);
+    });
+};
+
+/**
+ * Handles drag start event
+ */
+const handleDragStart = (e) => {
+    // Prevent dragging if editing
+    if (e.target.querySelector('.task-text-editable')) {
+        e.preventDefault();
+        return;
+    }
+
+    draggedElement = e.currentTarget;
+    draggedIndex = parseInt(e.currentTarget.dataset.index);
+    
+    e.currentTarget.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', e.currentTarget.innerHTML);
+    
+    // For Firefox
+    e.dataTransfer.setData('text/plain', '');
+};
+
+/**
+ * Handles drag over event
+ */
+const handleDragOver = (e) => {
+    if (e.preventDefault) {
+        e.preventDefault();
+    }
+    
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+};
+
+/**
+ * Handles drag enter event
+ */
+const handleDragEnter = (e) => {
+    const item = e.currentTarget;
+    if (item !== draggedElement && item.classList.contains('task-item')) {
+        const allItems = [...DOM.tasksList.querySelectorAll('.task-item')];
+        const draggedIdx = allItems.indexOf(draggedElement);
+        const targetIdx = allItems.indexOf(item);
+        
+        if (draggedIdx < targetIdx) {
+            item.style.borderBottom = '3px solid #d68c45';
+            item.style.borderTop = '';
+        } else {
+            item.style.borderTop = '3px solid #d68c45';
+            item.style.borderBottom = '';
+        }
+    }
+};
+
+/**
+ * Handles drag leave event
+ */
+const handleDragLeave = (e) => {
+    e.currentTarget.style.borderTop = '';
+    e.currentTarget.style.borderBottom = '';
+};
+
+/**
+ * Handles drop event
+ */
+const handleDrop = (e) => {
+    if (e.stopPropagation) {
+        e.stopPropagation();
+    }
+    
+    e.preventDefault();
+    
+    const dropTarget = e.currentTarget;
+    dropTarget.style.borderTop = '';
+    dropTarget.style.borderBottom = '';
+    
+    if (draggedElement !== dropTarget && dropTarget.classList.contains('task-item')) {
+        const allItems = [...DOM.tasksList.querySelectorAll('.task-item')];
+        const draggedIdx = allItems.indexOf(draggedElement);
+        const targetIdx = allItems.indexOf(dropTarget);
+        
+        // Reorder the array
+        const draggedItem = todoList[draggedIndex];
+        todoList.splice(draggedIndex, 1);
+        
+        // Calculate new position
+        const newIndex = targetIdx > draggedIdx ? targetIdx : targetIdx;
+        todoList.splice(newIndex, 0, draggedItem);
+        
+        render();
+        saveToLocalStorage();
+    }
+    
+    return false;
+};
+
+/**
+ * Handles drag end event
+ */
+const handleDragEnd = (e) => {
+    e.currentTarget.classList.remove('dragging');
+    
+    // Clean up all borders
+    document.querySelectorAll('.task-item').forEach(item => {
+        item.style.borderTop = '';
+        item.style.borderBottom = '';
+    });
+    
+    // Check if dropped outside the list
+    const rect = DOM.tasksList.getBoundingClientRect();
+    const isOutside = e.clientX < rect.left || 
+                     e.clientX > rect.right || 
+                     e.clientY < rect.top || 
+                     e.clientY > rect.bottom;
+    
+    if (isOutside) {
+        // Just render again to reset everything
+        render();
+    }
+    
+    draggedElement = null;
+    draggedIndex = null;
 };
 
 // ==================== LOCAL STORAGE ====================
@@ -489,7 +532,9 @@ const handleTaskClick = (e) => {
     const actions = {
         toggle: () => toggleComplete(index),
         edit: () => editTask(index),
-        delete: () => deleteTask(index)
+        delete: () => deleteTask(index),
+        save: () => saveTask(index),
+        cancel: () => cancelEdit(index)
     };
 
     actions[action]?.();
@@ -501,14 +546,18 @@ const handleTaskClick = (e) => {
  * Sets up all event listeners
  */
 const initEventListeners = () => {
+    // Add task button click
     DOM.addBtn.addEventListener('click', addTask);
 
+    // Enter key to add task
     DOM.taskInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addTask();
     });
 
+    // Theme toggle
     DOM.themeToggle.addEventListener('click', toggleTheme);
 
+    // Event delegation for task actions
     DOM.tasksList.addEventListener('click', handleTaskClick);
     DOM.tasksList.addEventListener('change', handleTaskClick);
 };
@@ -533,7 +582,3 @@ if (document.readyState === 'loading') {
 } else {
     init();
 }
-
-// ==================== EXPORTS (for potential future use) ====================
-// Uncomment if using modules
-// export { addTask, deleteTask, editTask, toggleComplete, render };
