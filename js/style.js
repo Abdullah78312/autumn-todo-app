@@ -1,5 +1,16 @@
 // ==================== STATE MANAGEMENT ====================
 let todoList = [];
+let dragState = {
+    isDragging: false,
+    draggedElement: null,
+    draggedIndex: null,
+    placeholder: null,
+    originalPosition: null,
+    offsetX: 0,
+    offsetY: 0,
+    doubleClickTimer: null,
+    clickCount: 0
+};
 
 // ==================== DOM ELEMENTS ====================
 const DOM = {
@@ -121,6 +132,221 @@ const render = () => {
 
     const tasksHtml = todoList.map(renderTaskItem).join('');
     DOM.tasksList.innerHTML = tasksHtml;
+    initDragAndDrop();
+};
+
+// ==================== DRAG AND DROP FUNCTIONALITY ====================
+
+/**
+ * Handles double click detection to start dragging
+ * @param {Event} e - Click event
+ * @param {HTMLElement} taskItem - Task element
+ */
+const handleDoubleClick = (e, taskItem) => {
+    dragState.clickCount++;
+    
+    if (dragState.clickCount === 1) {
+        dragState.doubleClickTimer = setTimeout(() => {
+            dragState.clickCount = 0;
+        }, 300);
+    } else if (dragState.clickCount === 2) {
+        clearTimeout(dragState.doubleClickTimer);
+        dragState.clickCount = 0;
+        startDragging(e, taskItem);
+    }
+};
+
+/**
+ * Starts the dragging operation
+ * @param {Event} e - Mouse event
+ * @param {HTMLElement} taskItem - Task element to drag
+ */
+const startDragging = (e, taskItem) => {
+    if (e.target.closest('.action-btn') || e.target.closest('.checkbox')) return;
+    
+    dragState.isDragging = true;
+    dragState.draggedElement = taskItem;
+    dragState.draggedIndex = parseInt(taskItem.dataset.index);
+    
+    const rect = taskItem.getBoundingClientRect();
+    dragState.offsetX = e.clientX - rect.left;
+    dragState.offsetY = e.clientY - rect.top;
+    dragState.originalPosition = {
+        index: dragState.draggedIndex,
+        top: rect.top,
+        left: rect.left
+    };
+    
+    // Create placeholder
+    dragState.placeholder = taskItem.cloneNode(true);
+    dragState.placeholder.classList.add('placeholder');
+    taskItem.parentNode.insertBefore(dragState.placeholder, taskItem);
+    
+    // Style dragged element
+    taskItem.classList.add('dragging');
+    taskItem.style.position = 'fixed';
+    taskItem.style.zIndex = '1000';
+    taskItem.style.width = rect.width + 'px';
+    taskItem.style.left = (e.clientX - dragState.offsetX) + 'px';
+    taskItem.style.top = (e.clientY - dragState.offsetY) + 'px';
+    taskItem.style.pointerEvents = 'none';
+    
+    document.body.style.cursor = 'grabbing';
+};
+
+/**
+ * Handles mouse move during dragging
+ * @param {Event} e - Mouse move event
+ */
+const handleDragMove = (e) => {
+    if (!dragState.isDragging || !dragState.draggedElement) return;
+    
+    const x = e.clientX - dragState.offsetX;
+    const y = e.clientY - dragState.offsetY;
+    
+    dragState.draggedElement.style.left = x + 'px';
+    dragState.draggedElement.style.top = y + 'px';
+    
+    // Find the element we're hovering over
+    const afterElement = getDragAfterElement(e.clientY);
+    const placeholder = dragState.placeholder;
+    
+    if (afterElement == null) {
+        DOM.tasksList.appendChild(placeholder);
+    } else {
+        DOM.tasksList.insertBefore(placeholder, afterElement);
+    }
+};
+
+/**
+ * Gets the element that should be after the dragged element
+ * @param {number} y - Y position of mouse
+ * @returns {HTMLElement|null} Element after dragged position
+ */
+const getDragAfterElement = (y) => {
+    const draggableElements = [...DOM.tasksList.querySelectorAll('.task-item:not(.dragging):not(.placeholder)')];
+    
+    return draggableElements.reduce((closest, child) => {
+        const box = child.getBoundingClientRect();
+        const offset = y - box.top - box.height / 2;
+        
+        if (offset < 0 && offset > closest.offset) {
+            return { offset: offset, element: child };
+        } else {
+            return closest;
+        }
+    }, { offset: Number.NEGATIVE_INFINITY }).element;
+};
+
+/**
+ * Checks if the element is inside the tasks list container
+ * @param {number} x - X position
+ * @param {number} y - Y position
+ * @returns {boolean} True if inside container
+ */
+const isInsideContainer = (x, y) => {
+    const rect = DOM.tasksList.getBoundingClientRect();
+    return x >= rect.left && x <= rect.right && y >= rect.top && y <= rect.bottom;
+};
+
+/**
+ * Handles the end of dragging operation
+ * @param {Event} e - Mouse up event
+ */
+const handleDragEnd = (e) => {
+    if (!dragState.isDragging || !dragState.draggedElement) return;
+    
+    const isInside = isInsideContainer(e.clientX, e.clientY);
+    
+    if (!isInside) {
+        // Return to original position with animation
+        returnToOriginalPosition();
+    } else {
+        // Drop at new position
+        completeDrop();
+    }
+    
+    document.body.style.cursor = 'default';
+};
+
+/**
+ * Returns the dragged element to its original position
+ */
+const returnToOriginalPosition = () => {
+    const element = dragState.draggedElement;
+    const original = dragState.originalPosition;
+    
+    // Animate back
+    element.style.transition = 'all 0.3s ease';
+    element.style.left = original.left + 'px';
+    element.style.top = original.top + 'px';
+    element.style.opacity = '0.5';
+    
+    setTimeout(() => {
+        cleanupDrag();
+        render();
+    }, 300);
+};
+
+/**
+ * Completes the drop at new position
+ */
+const completeDrop = () => {
+    const placeholder = dragState.placeholder;
+    const newIndex = [...DOM.tasksList.children].indexOf(placeholder);
+    const oldIndex = dragState.draggedIndex;
+    
+    // Reorder array
+    const [movedItem] = todoList.splice(oldIndex, 1);
+    todoList.splice(newIndex, 0, movedItem);
+    
+    cleanupDrag();
+    render();
+    saveToLocalStorage();
+};
+
+/**
+ * Cleans up drag state and elements
+ */
+const cleanupDrag = () => {
+    if (dragState.draggedElement) {
+        dragState.draggedElement.classList.remove('dragging');
+        dragState.draggedElement.style.position = '';
+        dragState.draggedElement.style.zIndex = '';
+        dragState.draggedElement.style.width = '';
+        dragState.draggedElement.style.left = '';
+        dragState.draggedElement.style.top = '';
+        dragState.draggedElement.style.pointerEvents = '';
+        dragState.draggedElement.style.transition = '';
+        dragState.draggedElement.style.opacity = '';
+    }
+    
+    if (dragState.placeholder && dragState.placeholder.parentNode) {
+        dragState.placeholder.remove();
+    }
+    
+    dragState.isDragging = false;
+    dragState.draggedElement = null;
+    dragState.draggedIndex = null;
+    dragState.placeholder = null;
+    dragState.originalPosition = null;
+};
+
+/**
+ * Initializes drag and drop for all task items
+ */
+const initDragAndDrop = () => {
+    const taskItems = DOM.tasksList.querySelectorAll('.task-item');
+    
+    taskItems.forEach(taskItem => {
+        taskItem.addEventListener('mousedown', (e) => {
+            handleDoubleClick(e, taskItem);
+        });
+    });
+    
+    // Global mouse move and mouse up listeners
+    document.addEventListener('mousemove', handleDragMove);
+    document.addEventListener('mouseup', handleDragEnd);
 };
 
 // ==================== TASK MANAGEMENT ====================
@@ -168,7 +394,7 @@ const editTask = (index) => {
     const currentText = todoList[index].text;
     const newText = prompt('Edit your task:', currentText);
     
-    if (newText === null) return; // User cancelled
+    if (newText === null) return;
     
     const trimmedText = newText.trim();
     
@@ -275,18 +501,14 @@ const handleTaskClick = (e) => {
  * Sets up all event listeners
  */
 const initEventListeners = () => {
-    // Add task button click
     DOM.addBtn.addEventListener('click', addTask);
 
-    // Enter key to add task
     DOM.taskInput.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') addTask();
     });
 
-    // Theme toggle
     DOM.themeToggle.addEventListener('click', toggleTheme);
 
-    // Event delegation for task actions
     DOM.tasksList.addEventListener('click', handleTaskClick);
     DOM.tasksList.addEventListener('change', handleTaskClick);
 };

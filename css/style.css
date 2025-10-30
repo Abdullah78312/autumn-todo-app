@@ -18,26 +18,41 @@ body.dark-mode {
     background: linear-gradient(135deg, #2c1810 0%, #1a1412 50%, #0d0907 100%);
 }
 
-/* Falling leaves animation */
+/* Falling leaves animation - flow like autumn breeze */
 .leaf {
     position: fixed;
     width: 30px;
     height: 30px;
     font-size: 30px;
-    animation: fall 15s linear infinite;
-    opacity: 0.7;
+    animation: autumnFall 15s ease-in-out infinite;
+    opacity: 0;
     z-index: 0;
     pointer-events: none;
 }
 
-@keyframes fall {
+@keyframes autumnFall {
     0% {
-        top: -10%;
-        transform: translateX(0) rotate(0deg);
+        opacity: 0;
+        transform: translateY(-10vh) translateX(0) rotate(0deg) scale(0.8);
+    }
+    5% {
+        opacity: 1;
+    }
+    25% {
+        transform: translateY(25vh) translateX(30px) rotate(90deg) scale(1);
+    }
+    50% {
+        transform: translateY(50vh) translateX(-20px) rotate(180deg) scale(0.9);
+    }
+    75% {
+        transform: translateY(75vh) translateX(40px) rotate(270deg) scale(1.1);
+    }
+    95% {
+        opacity: 1;
     }
     100% {
-        top: 110%;
-        transform: translateX(100px) rotate(360deg);
+        opacity: 0;
+        transform: translateY(110vh) translateX(-30px) rotate(360deg) scale(0.8);
     }
 }
 
@@ -85,12 +100,39 @@ body.dark-mode .header h1 {
 
 .logo {
     font-size: 2.5rem;
-    animation: bounce 2s infinite;
+    display: inline-block;
+    animation: logoLeafFall 8s ease-in-out infinite;
+    transform-origin: center;
 }
 
-@keyframes bounce {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-10px); }
+/* Animated falling and rising logo leaves */
+@keyframes logoLeafFall {
+    0% {
+        transform: translateY(-50px) rotate(-10deg);
+        opacity: 0;
+    }
+    10% {
+        opacity: 1;
+    }
+    15% {
+        transform: translateY(0) rotate(0deg);
+    }
+    70% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    85% {
+        opacity: 0.5;
+    }
+    100% {
+        transform: translateY(100vh) rotate(360deg);
+        opacity: 0;
+    }
+}
+
+/* Delay for second logo leaf */
+.header h1 .logo:last-child {
+    animation-delay: 0.5s;
 }
 
 /* Input Section */
@@ -218,11 +260,26 @@ body.dark-mode .tasks-header {
     animation: slideIn 0.4s ease;
     border-left: 4px solid #d68c45;
     flex-wrap: wrap;
+    cursor: grab;
+    user-select: none;
+    position: relative;
 }
 
 body.dark-mode .task-item {
     background: #1a1412;
     color: #f5d5a8;
+}
+
+.task-item.dragging {
+    opacity: 0.4;
+    cursor: grabbing;
+    transform: rotate(2deg);
+}
+
+.task-item.drag-placeholder {
+    border: 2px dashed #d68c45;
+    background: rgba(214, 140, 69, 0.1);
+    opacity: 0.5;
 }
 
 @keyframes slideIn {
@@ -240,12 +297,9 @@ body.dark-mode .task-item {
     box-shadow: 0 5px 20px rgba(214, 140, 69, 0.2);
 }
 
-.task-item.completed {
-    opacity: 0.6;
-}
-
 .task-item.completed .task-text {
     text-decoration: line-through;
+    opacity: 0.6;
 }
 
 .task-content {
@@ -286,6 +340,27 @@ body.dark-mode .task-text {
     color: #f5d5a8;
 }
 
+.task-text-editable {
+    padding: 6px 10px;
+    border: 2px solid #d68c45;
+    border-radius: 8px;
+    background: rgba(214, 140, 69, 0.1);
+    outline: none;
+    transition: all 0.3s ease;
+    width: 100%;
+}
+
+.task-text-editable:focus {
+    box-shadow: 0 0 10px rgba(214, 140, 69, 0.3);
+    background: rgba(214, 140, 69, 0.15);
+}
+
+body.dark-mode .task-text-editable {
+    background: rgba(245, 213, 168, 0.1);
+    border-color: #f5d5a8;
+    color: #f5d5a8;
+}
+
 .task-actions {
     display: flex;
     gap: 8px;
@@ -312,6 +387,28 @@ body.dark-mode .task-text {
     background: #357abd;
     transform: translateY(-2px);
     box-shadow: 0 5px 15px rgba(74, 144, 226, 0.3);
+}
+
+.save-btn {
+    background: #27ae60;
+    color: white;
+}
+
+.save-btn:hover {
+    background: #229954;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(39, 174, 96, 0.3);
+}
+
+.cancel-btn {
+    background: #95a5a6;
+    color: white;
+}
+
+.cancel-btn:hover {
+    background: #7f8c8d;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(149, 165, 166, 0.3);
 }
 
 .delete-btn {
@@ -438,6 +535,27 @@ body.dark-mode .empty-state {
     }
 }
 
+@media (max-width: 600px) {
+    .header h1 {
+        font-size: 1.8rem;
+    }
+
+    .logo {
+        font-size: 1.8rem;
+    }
+}
+
+/* Hide logo leaves when they would wrap to next line */
+@media (max-width: 520px) {
+    .logo {
+        display: none;
+    }
+
+    .header h1 {
+        justify-content: center;
+    }
+}
+
 @media (max-width: 480px) {
     body {
         padding: 12px;
@@ -450,10 +568,6 @@ body.dark-mode .empty-state {
     .header h1 {
         font-size: 1.6rem;
         gap: 8px;
-    }
-
-    .logo {
-        font-size: 1.6rem;
     }
 
     .input-section {
@@ -554,10 +668,6 @@ body.dark-mode .empty-state {
     .header h1 {
         font-size: 1.4rem;
         gap: 6px;
-    }
-
-    .logo {
-        font-size: 1.4rem;
     }
 
     .input-section {
