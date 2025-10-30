@@ -7,17 +7,38 @@
     <link rel="stylesheet" href="./css/style.css">
 </head>
 <body>
-    <!-- Falling leaves background -->
     <div id="leaves-container"></div>
 
     <div class="container">
-        <!-- Header -->
         <div class="header">
             <h1>
-                <span class="logo">🍂</span>
-               Let’s Fall Into Action
-                <span class="logo">🍁</span>
+               <!-- <span class="logo">🍂</span> -->
+                Let's Fall Into Action
+              <!--   <span class="logo">🍁</span> -->
             </h1>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-bar">
+            <div class="stat-item">
+                <span class="stat-value" id="totalTasks">0</span>
+                <span class="stat-label">Total Tasks</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="completedTasks">0</span>
+                <span class="stat-label">Completed</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="pendingTasks">0</span>
+                <span class="stat-label">Pending</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-value" id="completionRate">0%</span>
+                <span class="stat-label">Completion Rate</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="progressFill"></div>
+            </div>
         </div>
 
         <!-- Input Section -->
@@ -25,6 +46,44 @@
             <div class="input-wrapper">
                 <input type="text" class="task-input" id="taskInput" placeholder="Enter your task...">
                 <button class="add-btn" id="addBtn">+</button>
+            </div>
+            <div class="task-options">
+                <div class="option-group">
+                    <label class="option-label">Category</label>
+                    <select class="select-input" id="categorySelect">
+                        <option value="">None</option>
+                        <option value="work">Work</option>
+                        <option value="personal">Personal</option>
+                        <option value="urgent">Urgent</option>
+                        <option value="health">Health</option>
+                        <option value="finance">Finance</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label class="option-label">Priority</label>
+                    <select class="select-input" id="prioritySelect">
+                        <option value="low">Low</option>
+                        <option value="medium" selected>Medium</option>
+                        <option value="high">High</option>
+                    </select>
+                </div>
+                <div class="option-group">
+                    <label class="option-label">Due Date</label>
+                    <input type="date" class="date-input" id="dueDateInput">
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Bar -->
+        <div class="filter-bar">
+            <input type="text" class="search-box" id="searchBox" placeholder="🔍 Search tasks...">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="active">Active</button>
+            <button class="filter-btn" data-filter="completed">Completed</button>
+            <div class="bulk-actions">
+                <button class="bulk-btn" id="completeAllBtn">✓ Complete All</button>
+                <button class="bulk-btn" id="deleteAllBtn">✗ Delete All</button>
+                <button class="bulk-btn" id="exportBtn">📥 Export</button>
             </div>
         </div>
 
@@ -34,13 +93,69 @@
             <div id="tasksList"></div>
         </div>
 
-        <!-- Footer -->
         <div class="footer">Abdullah's Creation 👨🏻‍💻</div>
     </div>
 
     <!-- Theme Toggle -->
     <button class="theme-toggle" id="themeToggle">🌙 Dark Mode</button>
+    
+    <!-- Shortcuts Button -->
+    <button class="shortcuts-btn" id="shortcutsBtn">⌨️</button>
 
+    <!-- Undo Toast -->
+    <div class="undo-toast" id="undoToast">
+        <span>Task deleted</span>
+        <button class="undo-btn" id="undoBtn">Undo</button>
+    </div>
+
+    <!-- Shortcuts Modal -->
+    <div class="modal-overlay" id="shortcutsModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>⌨️ Keyboard Shortcuts</h3>
+                <button class="close-btn" id="closeModal">×</button>
+            </div>
+            <div class="shortcut-item">
+                <span>Add Task</span>
+                <span class="shortcut-key">Enter</span>
+            </div>
+            <div class="shortcut-item">
+                <span>Undo Delete</span>
+                <span class="shortcut-key">Ctrl + Z</span>
+            </div>
+            <div class="shortcut-item">
+                <span>Search Tasks</span>
+                <span class="shortcut-key">Ctrl + F</span>
+            </div>
+            <div class="shortcut-item">
+                <span>Toggle Theme</span>
+                <span class="shortcut-key">Ctrl + D</span>
+            </div>
+            <div class="shortcut-item">
+                <span>Complete All</span>
+                <span class="shortcut-key">Ctrl + Shift + C</span>
+            </div>
+            <div class="shortcut-item">
+                <span>Export Tasks</span>
+                <span class="shortcut-key">Ctrl + E</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notes Modal -->
+    <div class="modal-overlay" id="notesModal">
+        <div class="modal">
+            <div class="modal-header">
+                <h3>📝 Add Notes</h3>
+                <button class="close-btn" id="closeNotesModal">×</button>
+            </div>
+            <textarea id="notesTextarea" style="width: 100%; min-height: 120px; padding: 12px; border: 2px solid #d68c45; border-radius: 10px; font-size: 0.95rem; resize: vertical; outline: none; font-family: inherit;" placeholder="Add detailed notes for this task..."></textarea>
+            <div style="display: flex; gap: 10px; margin-top: 15px; justify-content: flex-end;">
+                <button class="action-btn" id="cancelNotesBtn" style="background: #95a5a6;">Cancel</button>
+                <button class="action-btn" id="saveNotesBtn" style="background: #27ae60;">Save Notes</button>
+            </div>
+        </div>
+    </div>
     <script src="./js/style.js"></script>
 </body>
 </html>
