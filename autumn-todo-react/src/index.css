@@ -9,12 +9,13 @@ html, body {
   width: 100%;
   height: 100%;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   background: linear-gradient(135deg, #f5d5a8 0%, #f0b27a 50%, #d68c45 100%);
-  min-height: 100%;
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: flex-start;
@@ -24,4 +25,17 @@ body {
 
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+}
+
+/* Responsive Padding Adjustments */
+@media (max-width: 1024px) {
+  body { padding: 3% 1%; }
+}
+
+@media (max-width: 768px) {
+  body { padding: 4% 2%; }
+}
+
+@media (max-width: 480px) {
+  body { padding: 5% 3%; }
 }

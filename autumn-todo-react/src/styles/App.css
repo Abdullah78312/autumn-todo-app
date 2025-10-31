@@ -60,11 +60,13 @@ body {
 
 .container {
   max-width: 1000px;
-   width: 95% !important;
+  width: 95% !important;
   margin: 0 auto;
   position: relative;
   z-index: 1;
+  padding: 0 2%; /* 🟢 add this line */
 }
+
 
 /* Header */
 .header {
@@ -780,4 +782,19 @@ body {
     width: 42px;
     height: 42px;
   }
+  @media (max-width: 768px) {
+  .container {
+    width: 100% !important;
+    padding: 0 4%; /* 🟢 extra padding on small screens */
+  }
+
+  .input-section,
+  .filter-bar,
+  .stats-bar,
+  .tasks-section {
+    padding-left: 4%;
+    padding-right: 4%; /* 🟢 gives breathing space */
+  }
+}
+
 }
