@@ -92,6 +92,7 @@ function App() {
 
   return (
     <div className="app">
+      <div className="container">
       {/* ✅ Fixed Helmet — ensures string-only content */}
       <Helmet>
         <title>{`Autumn Breeze Todo List - ${taskStats?.total ?? 0} Tasks`}</title>
@@ -117,6 +118,7 @@ function App() {
       <UndoToast />
       <ShortcutsModal />
       <NotesModal />
+    </div>
     </div>
   );
 }

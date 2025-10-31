@@ -15,8 +15,12 @@ body {
 }
 
 .app {
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
   width: 100%;
   min-height: 100vh;
+  padding: 20px 0;
 }
 
 /* Confetti Animation */
@@ -56,6 +60,7 @@ body {
 
 .container {
   max-width: 1000px;
+   width: 95% !important;
   margin: 0 auto;
   position: relative;
   z-index: 1;
@@ -717,5 +722,62 @@ body {
     width: 45px;
     height: 45px;
     font-size: 1.1rem;
+  }
+}
+
+/* ✅ General Responsive Enhancements */
+@media (max-width: 1024px) {
+  .container {
+    width: 100% !important;
+  }
+
+  .stats-bar {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .header h1 {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .input-section, .tasks-section {
+    padding: 15px;
+  }
+
+  .task-options {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-bar {
+    flex-direction: column;
+  }
+
+  .bulk-btn, .filter-btn {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .task-item {
+    padding: 12px;
+  }
+
+  .task-text {
+    font-size: 0.9rem;
+  }
+
+  .theme-toggle {
+    bottom: 12px;
+    left: 12px;
+    padding: 8px 14px;
+  }
+
+  .shortcuts-btn {
+    bottom: 12px;
+    right: 12px;
+    width: 42px;
+    height: 42px;
   }
 }
