@@ -1,0 +1,337 @@
+/* ==================== DARK MODE ==================== */
+body.dark-mode {
+  background: linear-gradient(135deg, #2c1810 0%, #1a1412 50%, #0d0907 100%);
+}
+
+.dark-mode .header h1 {
+  color: #f5d5a8;
+}
+
+.dark-mode .stats-bar {
+  background: rgba(44, 24, 16, 0.95);
+}
+
+.dark-mode .stat-value {
+  color: #f5d5a8;
+}
+
+.dark-mode .stat-label {
+  color: #999;
+}
+
+.dark-mode .progress-bar {
+  background: #333;
+}
+
+.dark-mode .input-section {
+  background: rgba(44, 24, 16, 0.95);
+}
+
+.dark-mode .task-input {
+  background: #1a1412;
+  color: #f5d5a8;
+  border-color: #f5d5a8;
+}
+
+.dark-mode .option-label {
+  color: #999;
+}
+
+.dark-mode .select-input,
+.dark-mode .date-input {
+  background: #1a1412;
+  color: #f5d5a8;
+  border-color: #f5d5a8;
+}
+
+.dark-mode .filter-bar {
+  background: rgba(44, 24, 16, 0.95);
+}
+
+.dark-mode .search-box {
+  background: #1a1412;
+  color: #f5d5a8;
+  border-color: #f5d5a8;
+}
+
+.dark-mode .filter-btn {
+  background: #1a1412;
+  color: #f5d5a8;
+}
+
+.dark-mode .filter-btn:hover,
+.dark-mode .filter-btn.active {
+  background: #d68c45;
+  color: white;
+}
+
+.dark-mode .tasks-section {
+  background: rgba(44, 24, 16, 0.95);
+}
+
+.dark-mode .task-item {
+  background: #1a1412;
+  color: #f5d5a8;
+}
+
+.dark-mode .task-number {
+  color: #f5d5a8;
+}
+
+.dark-mode .task-text {
+  color: #f5d5a8;
+}
+
+.dark-mode .tag-work { background: #1565c0; color: #e3f2fd; }
+.dark-mode .tag-personal { background: #6a1b9a; color: #f3e5f5; }
+.dark-mode .tag-urgent { background: #b71c1c; color: #ffebee; }
+.dark-mode .tag-health { background: #1b5e20; color: #e8f5e9; }
+.dark-mode .tag-finance { background: #bf360c; color: #fff3e0; }
+
+.dark-mode .priority-high { background: #b71c1c; color: #ffebee; }
+.dark-mode .priority-medium { background: #bf360c; color: #fff3e0; }
+.dark-mode .priority-low { background: #1b5e20; color: #e8f5e9; }
+
+.dark-mode .due-date {
+  color: #999;
+}
+
+.dark-mode .task-notes {
+  color: #999;
+  background: rgba(245, 213, 168, 0.05);
+}
+
+.dark-mode .modal {
+  background: #2c1810;
+  color: #f5d5a8;
+}
+
+.dark-mode .modal-header h3 {
+  color: #f5d5a8;
+}
+
+.dark-mode .shortcut-item {
+  background: rgba(245, 213, 168, 0.05);
+}
+
+.dark-mode .footer {
+  color: #f5d5a8;
+}
+
+.dark-mode .empty-state {
+  color: #666;
+}
+
+/* ==================== WINTER MODE ==================== */
+body.winter-mode {
+  background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 50%, #90caf9 100%);
+}
+
+.winter-mode .header h1 {
+  color: #1565c0;
+  text-shadow: 2px 2px 4px rgba(21, 101, 192, 0.2);
+}
+
+.winter-mode .stats-bar {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 5px 20px rgba(21, 101, 192, 0.15);
+}
+
+.winter-mode .stat-value {
+  color: #1976d2;
+}
+
+.winter-mode .stat-label {
+  color: #1565c0;
+}
+
+.winter-mode .progress-bar {
+  background: #bbdefb;
+}
+
+.winter-mode .progress-fill {
+  background: linear-gradient(90deg, #42a5f5, #1976d2);
+}
+
+.winter-mode .input-section {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 40px rgba(21, 101, 192, 0.2);
+}
+
+.winter-mode .task-input {
+  border-color: #42a5f5;
+}
+
+.winter-mode .task-input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 15px rgba(66, 165, 245, 0.3);
+}
+
+.winter-mode .add-btn {
+  background: linear-gradient(135deg, #42a5f5, #1976d2);
+}
+
+.winter-mode .option-label {
+  color: #1565c0;
+}
+
+.winter-mode .select-input,
+.winter-mode .date-input {
+  border-color: #42a5f5;
+}
+
+.winter-mode .select-input:focus,
+.winter-mode .date-input:focus {
+  border-color: #1976d2;
+  box-shadow: 0 0 10px rgba(66, 165, 245, 0.2);
+}
+
+.winter-mode .filter-bar {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 5px 20px rgba(21, 101, 192, 0.15);
+}
+
+.winter-mode .search-box {
+  border-color: #42a5f5;
+}
+
+.winter-mode .filter-btn {
+  border-color: #42a5f5;
+  color: #1976d2;
+}
+
+.winter-mode .filter-btn:hover,
+.winter-mode .filter-btn.active {
+  background: #42a5f5;
+  color: white;
+}
+
+.winter-mode .bulk-btn {
+  background: #1976d2;
+}
+
+.winter-mode .bulk-btn:hover {
+  background: #1565c0;
+}
+
+.winter-mode .tasks-section {
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 10px 40px rgba(21, 101, 192, 0.2);
+}
+
+.winter-mode .tasks-header {
+  background: linear-gradient(135deg, #42a5f5, #90caf9);
+}
+
+.winter-mode .task-item {
+  background: #fff;
+  border-left-color: #42a5f5;
+  box-shadow: 0 2px 8px rgba(21, 101, 192, 0.1);
+}
+
+.winter-mode .task-item:hover {
+  box-shadow: 0 5px 20px rgba(66, 165, 245, 0.2);
+}
+
+.winter-mode .task-item.priority-high {
+  border-left-color: #e74c3c;
+}
+
+.winter-mode .task-item.priority-medium {
+  border-left-color: #1976d2;
+}
+
+.winter-mode .task-item.priority-low {
+  border-left-color: #4caf50;
+}
+
+.winter-mode .checkbox {
+  accent-color: #42a5f5;
+}
+
+.winter-mode .task-number {
+  color: #1976d2;
+}
+
+.winter-mode .task-text {
+  color: #0d47a1;
+}
+
+.winter-mode .tag-work { background: #e3f2fd; color: #1565c0; }
+.winter-mode .tag-personal { background: #e1f5fe; color: #0277bd; }
+.winter-mode .tag-urgent { background: #ffebee; color: #c62828; }
+.winter-mode .tag-health { background: #e8f5e9; color: #2e7d32; }
+.winter-mode .tag-finance { background: #fff3e0; color: #e65100; }
+
+.winter-mode .priority-high { background: #ffebee; color: #c62828; }
+.winter-mode .priority-medium { background: #e3f2fd; color: #1565c0; }
+.winter-mode .priority-low { background: #e8f5e9; color: #2e7d32; }
+
+.winter-mode .due-date {
+  color: #1565c0;
+}
+
+.winter-mode .task-notes {
+  color: #1565c0;
+  background: rgba(66, 165, 245, 0.05);
+}
+
+.winter-mode .theme-toggle {
+  background: linear-gradient(135deg, #42a5f5, #1976d2);
+  box-shadow: 0 5px 20px rgba(66, 165, 245, 0.3);
+}
+
+.winter-mode .shortcuts-btn {
+  background: linear-gradient(135deg, #42a5f5, #1976d2);
+  box-shadow: 0 5px 20px rgba(66, 165, 245, 0.3);
+}
+
+.winter-mode .modal {
+  background: white;
+  box-shadow: 0 20px 60px rgba(21, 101, 192, 0.3);
+}
+
+.winter-mode .modal-header h3 {
+  color: #1976d2;
+}
+
+.winter-mode .shortcut-item {
+  background: rgba(66, 165, 245, 0.05);
+}
+
+.winter-mode .shortcut-key {
+  background: #42a5f5;
+}
+
+.winter-mode .footer {
+  color: #1976d2;
+}
+
+.winter-mode .empty-state {
+  color: #90a4ae;
+}
+
+.winter-mode .empty-icon {
+  opacity: 0.6;
+}
+
+.winter-mode .undo-toast {
+  background: #1976d2;
+}
+
+.winter-mode .undo-btn {
+  background: #42a5f5;
+}
+
+/* Winter-specific animations */
+@keyframes winterFall {
+  0%, 100% { opacity: 0; }
+  5%, 95% { opacity: 0.9; }
+  0% { transform: translateY(-10vh) translateX(0) rotate(0deg) scale(1); }
+  50% { transform: translateY(50vh) translateX(20px) rotate(180deg) scale(1.2); }
+  100% { transform: translateY(110vh) translateX(-10px) rotate(360deg) scale(0.8); }
+}
+
+.winter-mode .leaf {
+  animation: winterFall 12s ease-in-out infinite;
+}
